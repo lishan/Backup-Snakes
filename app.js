@@ -3,11 +3,13 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
+//启动后端express服务器
 server.listen(process.env.PORT || 3000, process.env.IP || "127.0.0.1", function () {
   var addr = server.address();
   console.log("Server listening at", addr.address + ":" + addr.port);
 });
 
+//设置路由
 app.get('/', function (req, res) {
   res.sendfile(__dirname + '/online_snake_battle.html');
 });
@@ -24,6 +26,7 @@ var w = 50, h = 50;
 var snakes = [];
 var foods = [];
 
+//生成一条蛇，默认长度为2，向左游动
 var generateSnake = function(id){
   var x = parseInt(Math.random() * w-3, 10);
   var y = parseInt(Math.random() * h, 10);
@@ -39,12 +42,14 @@ var generateSnake = function(id){
   return snakes[snakes.length - 1];
 };
 
+//生成一个食物
 var generateFood = function(){
   foods.push({
     x: parseInt(Math.random() * w, 10), y: parseInt(Math.random() * h, 10)
   });
 };
 
+//判断蛇游动的下一个坐标点
 var nextStep = function (snake) {
   if (snake.body[0]) {
     switch (snake.dir) {
@@ -67,6 +72,7 @@ var nextStep = function (snake) {
   }
 };
 
+//寻找当前点是否是食物
 var find = function (point) {
   for (var i = 0; i < foods.length; i++) {
     if (point.x === foods[i].x && point.y === foods[i].y)
@@ -86,6 +92,7 @@ var eat = function(i, next){
   }
 };
 
+//当蛇碰撞的时候游戏结束
 var conflict = function(next){
   for(var i = 0 ; i < snakes.length; i++){
     if(snakes[i]) {
@@ -134,7 +141,7 @@ io.on('connection', function (socket) {
     }
   });
 
-  socket.on('disconnect', function(){
+  socket.on('disconnect', function(){//客户端退出的时候删除蛇
     for(var i = 0; i < snakes.length ; i++){
       if(snakes[i].id = socket.id){
         snakes.splice(i, 1);
